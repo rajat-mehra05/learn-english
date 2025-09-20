@@ -60,17 +60,26 @@ export const SimpleAIAssistant: React.FC<SimpleAIAssistantProps> = ({
         <div className="space-y-4">
           <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
             <h4 className="font-semibold text-blue-800 mb-2">Explanation</h4>
-            <p className="text-blue-700">{response.explanation}</p>
+            <p className="text-blue-700 mb-2">{response.explanation}</p>
+            <p className="text-blue-600 text-sm italic">
+              {response.explanationAssamese}
+            </p>
           </div>
 
           <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
             <h4 className="font-semibold text-green-800 mb-2">Example</h4>
-            <p className="text-green-700">{response.example}</p>
+            <p className="text-green-700 mb-2">{response.example}</p>
+            <p className="text-green-600 text-sm italic">
+              {response.exampleAssamese}
+            </p>
           </div>
 
           <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
             <h4 className="font-semibold text-yellow-800 mb-2">Learning Tip</h4>
-            <p className="text-yellow-700">{response.tip}</p>
+            <p className="text-yellow-700 mb-2">{response.tip}</p>
+            <p className="text-yellow-600 text-sm italic">
+              {response.tipAssamese}
+            </p>
           </div>
         </div>
       )}
