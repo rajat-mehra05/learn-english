@@ -1,4 +1,4 @@
-// Simple AI service for English learning explanations
+// Enhanced AI service for English learning explanations
 export interface AIResponse {
   explanation: string;
   explanationAssamese: string;
@@ -37,19 +37,17 @@ class AIService {
     }
 
     try {
-      const prompt = `Explain the English word "${word}" for someone learning English. Context: ${context}. Keep it simple and helpful.
+      const prompt = `Explain the English word/phrase "${word}" for someone learning English. Context: ${context}. 
 
-Please provide your response in the following JSON format:
+Please respond in this JSON format:
 {
-  "explanation": "Simple English explanation of the word",
-  "explanationAssamese": "Same explanation in native Assamese language",
-  "example": "Example sentence in English using the word",
-  "exampleAssamese": "Same example sentence translated to native Assamese",
-  "tip": "Helpful tip in English for learning this word",
-  "tipAssamese": "Same tip translated to Assamese"
-}
-
-Make sure the Assamese translations are accurate and natural.`;
+  "explanation": "Simple explanation in English",
+  "explanationAssamese": "Same explanation in Assamese",
+  "example": "Example sentence in English",
+  "exampleAssamese": "Same example in Assamese", 
+  "tip": "Learning tip in English",
+  "tipAssamese": "Same tip in Assamese"
+}`;
 
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -77,44 +75,52 @@ Make sure the Assamese translations are accurate and natural.`;
       const data = await response.json();
       const content = data.content[0].text;
 
+      console.log("AI Response content:", content);
+
       try {
         // Try to parse the JSON response
         const parsedResponse = JSON.parse(content);
+        console.log("Parsed response:", parsedResponse);
+
         return {
           explanation: parsedResponse.explanation || content,
           explanationAssamese:
             parsedResponse.explanationAssamese ||
-            `"${word}"ৰ অসমীয়া অৰ্থ ${context}ৰ সৈতে সম্পৰ্কিত।`,
+            `"${word}"ৰ অৰ্থ ${context}ৰ সৈতে সম্পৰ্কিত।`,
           example:
             parsedResponse.example || `Example: Use "${word}" in a sentence`,
           exampleAssamese:
             parsedResponse.exampleAssamese ||
             `উদাহৰণ: "${word}" শব্দটো ব্যৱহাৰ কৰক`,
-          tip: parsedResponse.tip || `Tip: Practice saying "${word}" out loud`,
+          tip: parsedResponse.tip || `Tip: Practice using "${word}" regularly`,
           tipAssamese:
             parsedResponse.tipAssamese ||
-            `টিপ: "${word}" শব্দটো উচ্চস্বৰে কোৱাৰ অভ্যাস কৰক`,
+            `টিপ: "${word}" নিয়মিতভাৱে ব্যৱহাৰ কৰাৰ অভ্যাস কৰক`,
         };
-      } catch {
-        // If JSON parsing fails, return the content as explanation and provide Assamese fallbacks
+      } catch (parseError) {
+        console.warn(
+          "JSON parsing failed, using content as explanation:",
+          parseError
+        );
+        // If JSON parsing fails, return the content as explanation with fallbacks
         return {
           explanation: content,
-          explanationAssamese: `"${word}"ৰ অসমীয়া অৰ্থ ${context}ৰ সৈতে সম্পৰ্কিত।`,
-          example: `Example: Use "${word}" in a sentence`,
-          exampleAssamese: `উদাহৰণ: "${word}" শব্দটো ব্যৱহাৰ কৰক`,
-          tip: `Tip: Practice saying "${word}" out loud`,
-          tipAssamese: `টিপ: "${word}" শব্দটো উচ্চস্বৰে কোৱাৰ অভ্যাস কৰক`,
+          explanationAssamese: `"${word}"ৰ বিষয়ে তথ্য: ${context}ৰ প্ৰসংগত এইটো গুৰুত্বপূৰ্ণ।`,
+          example: `Example: Here's how to use "${word}" in context`,
+          exampleAssamese: `উদাহৰণ: "${word}" কেনেকৈ প্ৰসংগত ব্যৱহাৰ কৰিব পাৰি`,
+          tip: `Tip: Practice using "${word}" in different situations`,
+          tipAssamese: `টিপ: "${word}" বিভিন্ন পৰিস্থিতিত ব্যৱহাৰ কৰাৰ অভ্যাস কৰক`,
         };
       }
     } catch (error) {
       console.error("AI Service error:", error);
       return {
-        explanation: `"${word}" means something related to ${context}.`,
-        explanationAssamese: `"${word}"ৰ অৰ্থ ${context}ৰ সৈতে সম্পৰ্কিত।`,
-        example: `Example: I use "${word}" when talking about ${context}`,
-        exampleAssamese: `উদাহৰণ: মই "${word}" ব্যৱহাৰ কৰোঁ ${context}ৰ বিষয়ে কথা কোৱাৰ সময়ত`,
-        tip: `Tip: Try to use "${word}" in your daily conversations`,
-        tipAssamese: `টিপ: আপোনাৰ দৈনন্দিন কথোপকথনত "${word}" ব্যৱহাৰ কৰাৰ চেষ্টা কৰক`,
+        explanation: `"${word}" is related to ${context}. This is an important concept for English learning.`,
+        explanationAssamese: `"${word}" ${context}ৰ সৈতে সম্পৰ্কিত। এইটো ইংৰাজী শিকাৰ বাবে গুৰুত্বপূৰ্ণ ধাৰণা।`,
+        example: `Example: Use "${word}" when talking about ${context}`,
+        exampleAssamese: `উদাহৰণ: ${context}ৰ বিষয়ে কথা কোৱাৰ সময়ত "${word}" ব্যৱহাৰ কৰক`,
+        tip: `Tip: Practice using "${word}" in your daily conversations`,
+        tipAssamese: `টিপ: আপোনাৰ দৈনন্দিন কথোপকথনত "${word}" ব্যৱহাৰ কৰাৰ অভ্যাস কৰক`,
       };
     }
   }
