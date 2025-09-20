@@ -26,45 +26,39 @@ export interface ChatResponse {
 }
 
 // System prompt for conversational AI tutor
-const SYSTEM_PROMPT = `You are "ইংৰাজী শিক্ষক" (English Shikkhok), a friendly AI tutor who helps Assamese speakers learn English through natural conversation. You are like a patient friend who speaks both Assamese and English fluently.
+const SYSTEM_PROMPT = `You are a friendly person who helps Assamese speakers learn English through natural conversation. You speak both Assamese and English fluently.
 
-IMPORTANT: You should have natural, conversational responses - NOT structured lesson format. Talk like a real person, not a textbook.
-
-CONVERSATION STYLE:
-- Be warm, encouraging, and conversational
-- Respond naturally to what the user says
-- Ask follow-up questions to keep the conversation going
-- Use simple, friendly language
-- Mix Assamese and English naturally in your responses
+CONVERSATION RULES:
+- Talk like a real person, not a teacher or textbook
+- Ask only 1-2 questions maximum per response
+- Keep responses short and natural
+- Never use emojis, symbols, or special characters
+- Never read out punctuation marks like "comma", "period", "question mark"
+- Mix Assamese and English naturally
 
 WHEN USER SPEAKS IN ASSAMESE:
 - Respond in a mix of Assamese and English
 - Gently help them express the same thing in English
-- Don't use formal lesson format - just talk naturally
+- Ask simple follow-up questions
 
 WHEN USER SPEAKS IN ENGLISH:
-- Respond in English, but help with corrections if needed
-- Encourage them to keep practicing
-- Ask questions to continue the conversation
+- Respond in English
+- Help with corrections if needed
+- Ask one question to continue the conversation
 
 EXAMPLES OF GOOD RESPONSES:
-- "হয়, তুমি ঠিক কৈছা! 'I am fine' বুলি ক'ব পাৰি। আপোনাৰ দিনটো কেনে আছিল?" (Yes, you're right! You can say 'I am fine'. How was your day?)
+- "হয়, তুমি ঠিক কৈছা! I am fine বুলি ক'ব পাৰি। আপোনাৰ দিনটো কেনে আছিল?"
 - "Great! I understand you perfectly. What did you do today?"
-- "অসমীয়াত 'পানী' বুলি কওঁ, ইংৰাজীত 'water'। আপুনি পানী খাইছেনে?" (In Assamese we say 'পানী', in English it's 'water'. Did you drink water?)
+- "অসমীয়াত পানী বুলি কওঁ, ইংৰাজীত water। আপুনি পানী খাইছেনে?"
 
 AVOID:
-- Long structured lessons
-- Formal bullet points
-- Reading paragraphs of text
-- Using emoji markers like 🇮🇳, 🇺🇸, ✅, 📝
+- Using emojis or symbols
+- Reading punctuation marks
+- Long responses
+- Multiple questions
+- Formal teaching format
 
-BE LIKE A FRIEND:
-- Ask about their day, family, work
-- Share simple stories
-- Make jokes and be encouraging
-- Help them practice through natural conversation
-
-Remember: You're having a friendly chat, not teaching a formal lesson!`;
+Remember: You're having a casual chat with a friend!`;
 
 class ChatService {
   private apiKey: string;
@@ -79,6 +73,21 @@ class ChatService {
     if (!this.apiKey) {
       console.warn("VITE_CLAUDE_API_KEY not found in environment variables");
     }
+  }
+
+  // Clean text to remove emojis and special characters that cause voice issues
+  private cleanText(text: string): string {
+    // Remove emojis and special Unicode characters
+    return text
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, "") // Emoticons
+      .replace(/[\u{1F300}-\u{1F5FF}]/gu, "") // Misc symbols
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, "") // Transport
+      .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, "") // Flags
+      .replace(/[\u{2600}-\u{26FF}]/gu, "") // Misc symbols
+      .replace(/[\u{2700}-\u{27BF}]/gu, "") // Dingbats
+      .replace(/[^\x20-\x7E\u0980-\u09FF\s]/g, "") // Keep only printable ASCII, Assamese, and spaces
+      .replace(/\s+/g, " ") // Replace multiple spaces with single space
+      .trim();
   }
 
   // Detect language from text
@@ -228,21 +237,24 @@ class ChatService {
         aiContent = "Received empty response from AI";
       }
 
+      // Clean the content to remove emojis and special characters
+      const cleanedContent = this.cleanText(aiContent);
+
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: aiContent,
+        content: cleanedContent,
         timestamp: new Date(),
-        language: this.detectLanguage(aiContent),
+        language: this.detectLanguage(cleanedContent),
       };
 
       this.conversationHistory.push(assistantMessage);
 
       // Extract pronunciation and practice suggestions
-      const pronunciationMatch = aiContent.match(/উচ্চাৰণ: ([^\n]+)/);
-      const practiceMatch = aiContent.match(/📝 Practice: ([^\n]+)/);
-      const correctionMatch = aiContent.match(
-        /✅ Correct English: "?([^"\n]+)"?/
+      const pronunciationMatch = cleanedContent.match(/উচ্চাৰণ: ([^\n]+)/);
+      const practiceMatch = cleanedContent.match(/Practice: ([^\n]+)/);
+      const correctionMatch = cleanedContent.match(
+        /Correct English: "?([^"\n]+)"?/
       );
 
       const response: ChatResponse = {
@@ -327,14 +339,11 @@ class ChatService {
     return {
       id: "welcome",
       role: "assistant",
-      content: `নমস্কাৰ! মই আপোনাৰ ইংৰাজী বন্ধু। 
-Hello! I'm your English friend.
+      content: `নমস্কাৰ! মই আপোনাৰ ইংৰাজী বন্ধু। Hello! I'm your English friend.
 
-আপুনি অসমীয়াত বা ইংৰাজীত যি ভাল পায় সেইটোতে কথা ক'ব পাৰে। মই আপোনাক সহায় কৰিম!
-You can talk to me in Assamese or English - whatever you prefer. I'll help you!
+আপুনি অসমীয়াত বা ইংৰাজীত যি ভাল পায় সেইটোতে কথা ক'ব পাৰে। You can talk to me in Assamese or English.
 
-আজি আপোনাৰ কেনে? কি কৰি আছিলে?
-How are you today? What have you been doing?`,
+আজি আপোনাৰ কেনে? How are you today?`,
       timestamp: new Date(),
       language: "mixed",
     };
