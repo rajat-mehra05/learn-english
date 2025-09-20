@@ -1,12 +1,13 @@
-import React from 'react';
-import { BookOpen, Trophy, Flame } from 'lucide-react';
-import { UserProgress } from '../types';
+import { BookOpen, MessageCircle } from "lucide-react";
+import React from "react";
+import { UserProgress } from "../types";
 
 interface HeaderProps {
   progress: UserProgress;
+  onShowChat?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ progress }) => {
+export const Header: React.FC<HeaderProps> = ({ progress, onShowChat }) => {
   return (
     <header className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-6 shadow-lg">
       <div className="max-w-7xl mx-auto">
@@ -18,18 +19,17 @@ export const Header: React.FC<HeaderProps> = ({ progress }) => {
               <p className="text-blue-100">Learn English with Assamese</p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
-              <Flame className="h-5 w-5 text-orange-300" />
-              <span className="font-medium">{progress.currentStreak} day streak</span>
-            </div>
-            
-            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
-              <Trophy className="h-5 w-5 text-yellow-300" />
-              <span className="font-medium">{progress.totalWordsLearned} words</span>
-            </div>
-          </div>
+
+          {onShowChat && (
+            <button
+              onClick={onShowChat}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-colors"
+              title="Voice Chat Assistant"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="font-medium">Voice Chat</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

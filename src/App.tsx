@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { Header } from './components/Header';
-import { LessonGrid } from './components/LessonGrid';
-import { LessonView } from './components/LessonView';
-import { lessons } from './data/lessons';
-import { useProgress } from './hooks/useProgress';
-import { Lesson } from './types';
+import { useState } from "react";
+import { ChatPage } from "./components/ChatPage";
+import { Header } from "./components/Header";
+import { LessonGrid } from "./components/LessonGrid";
+import { LessonView } from "./components/LessonView";
+import { lessons } from "./data/lessons";
+import { useProgress } from "./hooks/useProgress";
+import { Lesson } from "./types";
 
 function App() {
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [showChat, setShowChat] = useState(false);
   const { progress, completeLesson } = useProgress();
 
   const handleStartLesson = (lesson: Lesson) => {
@@ -23,12 +25,22 @@ function App() {
     setCurrentLesson(null);
   };
 
+  const handleShowChat = () => {
+    setShowChat(true);
+  };
+
+  const handleBackFromChat = () => {
+    setShowChat(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <Header progress={progress} />
-      
+      <Header progress={progress} onShowChat={handleShowChat} />
+
       <main className="py-8">
-        {currentLesson ? (
+        {showChat ? (
+          <ChatPage onBack={handleBackFromChat} />
+        ) : currentLesson ? (
           <LessonView
             lesson={currentLesson}
             onComplete={handleCompleteLesson}
